@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { Footer } from '../../components/commons/Footer';
 import { Menu } from '../../components/commons/Menu';
+import { cmsService } from '../../infra/cms/cmsService';
 import { Box, Text, theme } from '../../theme/components';
 
 export async function getStaticPaths() {
@@ -15,6 +16,20 @@ export async function getStaticPaths() {
 
 export function getStaticProps({ params }) {
   const { id } = params;
+
+  const contentQuery = `
+    query{
+      contentFaqQuestion{
+        title
+        content{
+          value
+        }
+      }
+    }
+  `;
+
+  const {data} = cmsService({query: contentQuery});
+
   return {
     props: {
       id,
