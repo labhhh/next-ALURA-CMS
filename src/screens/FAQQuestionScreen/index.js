@@ -3,6 +3,9 @@ import { Footer } from '../../components/commons/Footer';
 import { Menu } from '../../components/commons/Menu';
 import { cmsService } from '../../infra/cms/cmsService';
 import { Box, Text, theme } from '../../theme/components';
+import { renderNodeRule, StructuredText } from 'react-datocms';
+import { isHeading } from 'datocms-structured-text-utils';
+import React, { createElement } from 'react';
 
 export async function getStaticPaths() {
   return {
@@ -14,7 +17,7 @@ export async function getStaticPaths() {
   };
 }
 
-export function getStaticProps({ params }) {
+export async function getStaticProps({ params }) {
   const { id } = params;
 
   const contentQuery = `
@@ -28,26 +31,28 @@ export function getStaticProps({ params }) {
     }
   `;
 
-  const {data} = cmsService({query: contentQuery});
+  const {data} = await cmsService({query: contentQuery});
 
+  console.log(data)
+  
   return {
     props: {
+      cmsContent: data,
       id,
-      title: 'Fake Title',
-      content: `
-        <h2>Primeiro Tópico</h2>
-        <p>paragrafo simples</p>
-        <p>outro paragrafo simples</p>
-        <ul>
-          <li>Item de lista 01</li>
-          <li>Item de lista 02</li>
-        </ul>
-      `,
+      title: data.contentFaqQuestion.title,
+      content: data.contentFaqQuestion.content,
     }
   }
 }
 
-export default function FAQQuestionScreen({ title, content }) {
+export default function FAQQuestionScreen({ cmsContent }) {
+  function ElementoNovo({ tag, props, children }) {
+    return createElement(
+      tag,
+      {...props},
+      children
+    );
+  }
   return (
     <>
       <Head>
@@ -55,7 +60,7 @@ export default function FAQQuestionScreen({ title, content }) {
       </Head>
 
       <Menu />
-
+      
       <Box
         tag="main"
         styleSheet={{
@@ -66,9 +71,7 @@ export default function FAQQuestionScreen({ title, content }) {
         }}
       >
         <Box
-          styleSheet={{
-            display: 'flex',
-            gap: theme.space.x4,
+          styleSheet={{ 
             flexDirection: 'column',
             width: '100%',
             maxWidth: theme.space.xcontainer_lg,
@@ -76,14 +79,24 @@ export default function FAQQuestionScreen({ title, content }) {
           }}
         >
           <Text tag="h1" variant="heading1">
-            {title}
+            {cmsContent.contentFaqQuestion.title}
           </Text>
 
-          <Box dangerouslySetInnerHTML={{ __html: content }} />
+          {/* <Box dangerouslySetInnerHTML={{ __html: content }} /> */}
+          <StructuredText data={cmsContent.contentFaqQuestion.content} customNodeRules={[
+            renderNodeRule(isHeading, ({node, children, key}) => {
+             
+              return(
+                <ElementoNovo tag={`h${node.level}`} key={key}>
+                  {children}
+                </ElementoNovo>
+              )
+            })
+          ]}/>
         </Box>
       </Box>
 
-      <Footer />
+      <Footer description={cmsContent.globalContent.globalFooter.description}/>
     </>
   )
 }
