@@ -1,6 +1,8 @@
-import { Box, Text, theme } from '../../../theme/components';
+import { getCMSContext } from '../../../infra/cms/CMSProvider';
+import { Box, Link, Text, theme } from '../../../theme/components';
 
-export function Footer({description}) {
+export function Footer() {
+  const description = getCMSContext().globalContent?.globalFooter?.description;
   return (
     <Box
       tag="footer"
@@ -26,6 +28,11 @@ export function Footer({description}) {
         >
           &copy; {new Date().getFullYear()} {description}
         </Text>
+        {process.env.NODE_ENV !== 'production' && 
+          <Link href="/api/preview">
+            Mudar para modo de preview
+          </Link>
+        }
       </Box>
     </Box>
   )

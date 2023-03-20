@@ -6,6 +6,7 @@ import { Box, Text, theme } from '../../theme/components';
 import { renderNodeRule, StructuredText } from 'react-datocms';
 import { isHeading } from 'datocms-structured-text-utils';
 import React, { createElement } from 'react';
+import { pageHOC } from '../../wrappers/pageHOC';
 
 export async function getStaticPaths() {
   return {
@@ -17,7 +18,7 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params, preview }) {
   const { id } = params;
 
   const contentQuery = `
@@ -31,7 +32,9 @@ export async function getStaticProps({ params }) {
     }
   `;
 
-  const {data} = await cmsService({query: contentQuery});
+  const {data} = await cmsService({query: contentQuery, isPreviewMode: preview});
+
+  console.log('preview', preview)
 
   console.log(data)
   
@@ -45,7 +48,7 @@ export async function getStaticProps({ params }) {
   }
 }
 
-export default function FAQQuestionScreen({ cmsContent }) {
+function FAQQuestionScreen({ cmsContent }) {
   function ElementoNovo({ tag, props, children }) {
     return createElement(
       tag,
@@ -96,7 +99,9 @@ export default function FAQQuestionScreen({ cmsContent }) {
         </Box>
       </Box>
 
-      <Footer description={cmsContent.globalContent.globalFooter.description}/>
+      <Footer/>
     </>
   )
 }
+
+export default pageHOC(FAQQuestionScreen)

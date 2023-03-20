@@ -1,11 +1,21 @@
 import Head from 'next/head';
 import { Footer } from '../../components/commons/Footer';
 import { Menu } from '../../components/commons/Menu';
+import { cmsService } from '../../infra/cms/cmsService';
 import { Box, Text, Link, Image, theme } from '../../theme/components';
+import { pageHOC } from '../../wrappers/pageHOC';
 
-export function getStaticProps() {
+export async function getStaticProps({preview}) {
+
+  const {data} = await cmsService({query: `
+  query {
+    __typename
+  }
+`, isPreviewMode: preview});
+
   return {
     props: {
+      cmsContent: data,
       categories: [
         {
           id: 'b4bb5090',
@@ -131,4 +141,4 @@ function FAQAllQuestionsScreen({ categories }) {
   )
 }
 
-export default FAQAllQuestionsScreen;
+export default pageHOC(FAQAllQuestionsScreen);
